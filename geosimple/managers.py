@@ -19,6 +19,10 @@ class GeoQuerySet(models.query.QuerySet):
         c._postprocess = copy(self._postprocess)
         return c
 
+    def __collapse_relations__(m, field_name):
+        """This gives us the ability to process field names that span relations"""
+        reduce( lambda a,b: getattr( a, b ), [ m ] + field_name.split("__" ) )
+
     def filter(self, *args, **kwargs):
         """Override filter to support custom lookups"""
 
@@ -76,7 +80,7 @@ class GeoQuerySet(models.query.QuerySet):
 
         results = []
         for result in list(result_iter):
-            result_location = getattr(result, field_name)
+            result_location = __collapse_relations__(result, field_name)
             distance_from_location = result_location.point.distance_from(convert_to_point(location))
             setattr(result, distance_property_name, distance_from_location)
             if not radius or distance_from_location < radius:
