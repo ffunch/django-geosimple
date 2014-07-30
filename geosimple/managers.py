@@ -19,9 +19,9 @@ class GeoQuerySet(models.query.QuerySet):
         c._postprocess = copy(self._postprocess)
         return c
 
-    def __collapse_relations__(m, field_name):
+    def __collapse_relations__(self, m, field_name):
         """This gives us the ability to process field names that span relations"""
-        reduce( lambda a,b: getattr( a, b ), [ m ] + field_name.split("__" ) )
+        return reduce( lambda a,b: getattr( a, b ), [ m ] + field_name.split("__" ) )
 
     def filter(self, *args, **kwargs):
         """Override filter to support custom lookups"""
