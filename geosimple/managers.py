@@ -80,7 +80,7 @@ class GeoQuerySet(models.query.QuerySet):
 
         results = []
         for result in list(result_iter):
-            result_location = __collapse_relations__(result, field_name)
+            result_location = self.__collapse_relations__(result, field_name)
             distance_from_location = result_location.point.distance_from(convert_to_point(location))
             setattr(result, distance_property_name, distance_from_location)
             if not radius or distance_from_location < radius:
