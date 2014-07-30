@@ -57,15 +57,20 @@ class GeoQuerySet(models.query.QuerySet):
         self._postprocess['sort'] = True
         return self._clone()
 
+    def order_by_distance_from(self, **kwargs):
+        self._postprocess['location'] = kwargs.get('location')
+        self._postprocess['field_name'] = kwargs.get('field_name')
+        return self.order_by_distance()
+
     def iterator(self):
         result_iter = super(GeoQuerySet, self).iterator()
 
         if not self._postprocess:
             return result_iter
 
-        field_name = self._postprocess['field_name']
-        location = self._postprocess['location']
-        radius = self._postprocess['radius']
+        field_name = self._postprocess.get('field_name')
+        location = self._postprocess.get('location')
+        radius = self._postprocess.get('radius')
 
         distance_property_name = "%s_distance" % field_name
 
@@ -74,7 +79,7 @@ class GeoQuerySet(models.query.QuerySet):
             result_location = getattr(result, field_name)
             distance_from_location = result_location.point.distance_from(convert_to_point(location))
             setattr(result, distance_property_name, distance_from_location)
-            if distance_from_location < radius:
+            if not radius or distance_from_location < radius:
                 results.append(result)
 
         if self._postprocess.get('sort'):
