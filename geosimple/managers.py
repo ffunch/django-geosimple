@@ -83,8 +83,9 @@ class GeoQuerySet(models.query.QuerySet):
         for result in list(result_iter):
             result_location = self.__collapse_relations__(result, field_name)
             distance_from_location = result_location.point.distance_from(convert_to_point(location))
-            setattr(result, distance_property_name, distance_from_location)
-            if not radius or distance_from_location < radius:
+            setattr(result, distance_property_name, distance_from_location.km)
+            # was giving an unorderable types error comparing distance_from_location with radius. Not sure why. Works if converted to km
+            if not radius or distance_from_location.km < radius.km:
                 results.append(result)
 
         if self._postprocess.get('sort'):
